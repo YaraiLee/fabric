@@ -1,5 +1,5 @@
 /*
-Copyright IBM Corp. 2016 All Rights Reserved.
+Copyright IBM Corp. 2017 All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,22 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package factory
+package utils
 
-// GetDefaultOpts offers a default implementation for Opts
-// returns a new instance every time
-func GetDefaultOpts() *FactoryOpts {
-	return &FactoryOpts{
-		ProviderName: "GM",
-		SwOpts: &SwOpts{
-			HashFamily: "GMSM3",
-			SecLevel:   256,
-			Ephemeral:  true,
-		},
-	}
-}
+import (
+	"errors"
+	"testing"
 
-// FactoryName returns the name of the provider
-func (o *FactoryOpts) FactoryName() string {
-	return o.ProviderName
+	"github.com/stretchr/testify/assert"
+)
+
+func TestErrToString(t *testing.T) {
+	assert.Equal(t, ErrToString(errors.New("error")), "error")
+
+	assert.Equal(t, ErrToString(nil), "<clean>")
+
 }

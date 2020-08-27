@@ -59,6 +59,7 @@ require (
 	github.com/sykesm/zap-logfmt v0.0.2
 	github.com/syndtr/goleveldb v1.0.1-0.20190625010220-02440ea7a285
 	github.com/tedsuo/ifrit v0.0.0-20180802180643-bea94bb476cc
+	github.com/tjfoc/gmsm v1.3.2
 	github.com/willf/bitset v1.1.10
 	go.etcd.io/etcd v0.5.0-alpha.5.0.20181228115726-23731bf9ba55
 	go.uber.org/zap v1.14.1

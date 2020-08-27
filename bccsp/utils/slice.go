@@ -14,22 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package factory
+package utils
 
-// GetDefaultOpts offers a default implementation for Opts
-// returns a new instance every time
-func GetDefaultOpts() *FactoryOpts {
-	return &FactoryOpts{
-		ProviderName: "GM",
-		SwOpts: &SwOpts{
-			HashFamily: "GMSM3",
-			SecLevel:   256,
-			Ephemeral:  true,
-		},
-	}
-}
+// Clone clones the passed slice
+func Clone(src []byte) []byte {
+	clone := make([]byte, len(src))
+	copy(clone, src)
 
-// FactoryName returns the name of the provider
-func (o *FactoryOpts) FactoryName() string {
-	return o.ProviderName
+	return clone
 }

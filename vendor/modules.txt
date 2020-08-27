@@ -275,6 +275,10 @@ github.com/syndtr/goleveldb/leveldb/util
 github.com/tedsuo/ifrit
 github.com/tedsuo/ifrit/ginkgomon
 github.com/tedsuo/ifrit/grouper
+# github.com/tjfoc/gmsm v1.3.2
+github.com/tjfoc/gmsm/sm2
+github.com/tjfoc/gmsm/sm3
+github.com/tjfoc/gmsm/sm4
 # github.com/willf/bitset v1.1.10
 github.com/willf/bitset
 # go.etcd.io/etcd v0.5.0-alpha.5.0.20181228115726-23731bf9ba55
@@ -302,6 +306,7 @@ go.uber.org/zap/zapcore
 go.uber.org/zap/zapgrpc
 go.uber.org/zap/zaptest/observer
 # golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d
+golang.org/x/crypto/ripemd160
 golang.org/x/crypto/sha3
 # golang.org/x/net v0.0.0-20190620200207-3b0461eec859
 golang.org/x/net/html

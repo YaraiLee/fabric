@@ -14,22 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package factory
+package utils
 
-// GetDefaultOpts offers a default implementation for Opts
-// returns a new instance every time
-func GetDefaultOpts() *FactoryOpts {
-	return &FactoryOpts{
-		ProviderName: "GM",
-		SwOpts: &SwOpts{
-			HashFamily: "GMSM3",
-			SecLevel:   256,
-			Ephemeral:  true,
-		},
-	}
-}
+import (
+	"crypto/x509"
+)
 
-// FactoryName returns the name of the provider
-func (o *FactoryOpts) FactoryName() string {
-	return o.ProviderName
+// DERToX509Certificate converts der to x509
+func DERToX509Certificate(asn1Data []byte) (*x509.Certificate, error) {
+	return x509.ParseCertificate(asn1Data)
 }

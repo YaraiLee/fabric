@@ -14,22 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package factory
+package utils
 
-// GetDefaultOpts offers a default implementation for Opts
-// returns a new instance every time
-func GetDefaultOpts() *FactoryOpts {
-	return &FactoryOpts{
-		ProviderName: "GM",
-		SwOpts: &SwOpts{
-			HashFamily: "GMSM3",
-			SecLevel:   256,
-			Ephemeral:  true,
-		},
-	}
-}
+import "github.com/tjfoc/gmsm/sm2"
 
-// FactoryName returns the name of the provider
-func (o *FactoryOpts) FactoryName() string {
-	return o.ProviderName
+// DERToSM2Certificate converts der to sm2
+func DERToSM2Certificate(asn1Data []byte) (*sm2.Certificate, error) {
+	return sm2.ParseCertificate(asn1Data)
 }
