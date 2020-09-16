@@ -12,10 +12,11 @@ package main
 // the Identity Mixer MSP
 
 import (
-	"crypto/ecdsa"
+	//"crypto/ecdsa"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"github.com/tjfoc/gmsm/sm2"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -63,7 +64,7 @@ func main() {
 
 		revocationKey, err := idemix.GenerateLongTermRevocationKey()
 		handleError(err)
-		encodedRevocationSK, err := x509.MarshalECPrivateKey(revocationKey)
+		encodedRevocationSK, err := sm2.MarshalSm2UnecryptedPrivateKey(revocationKey)
 		handleError(err)
 		pemEncodedRevocationSK := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: encodedRevocationSK})
 		handleError(err)
@@ -158,7 +159,7 @@ func readIssuerKey() (*idemix.IssuerKey, []byte) {
 	return key, ipkBytes
 }
 
-func readRevocationKey() *ecdsa.PrivateKey {
+func readRevocationKey() *sm2.PrivateKey {
 	path := filepath.Join(*genCAInput, IdemixDirIssuer, IdemixConfigRevocationKey)
 	keyBytes, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -169,7 +170,7 @@ func readRevocationKey() *ecdsa.PrivateKey {
 	if block == nil {
 		handleError(errors.Errorf("failed to decode ECDSA private key"))
 	}
-	key, err := x509.ParseECPrivateKey(block.Bytes)
+	key, err := sm2.ParseSm2PrivateKey(block.Bytes)
 	handleError(err)
 
 	return key

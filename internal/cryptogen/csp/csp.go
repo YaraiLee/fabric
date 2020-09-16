@@ -8,11 +8,12 @@ package csp
 import (
 	"crypto"
 	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
-	"crypto/x509"
 	"encoding/asn1"
 	"encoding/pem"
+	"github.com/hyperledger/fabric/bccsp"
+	"github.com/hyperledger/fabric/bccsp/factory"
+	"github.com/hyperledger/fabric/bccsp/signer"
+	"github.com/tjfoc/gmsm/sm2"
 	"io"
 	"io/ioutil"
 	"math/big"
@@ -25,8 +26,8 @@ import (
 
 // LoadPrivateKey loads a private key from a file in keystorePath.  It looks
 // for a file ending in "_sk" and expects a PEM-encoded PKCS8 EC private key.
-func LoadPrivateKey(keystorePath string) (*ecdsa.PrivateKey, error) {
-	var priv *ecdsa.PrivateKey
+func LoadPrivateKey(keystorePath string) (*sm2.PrivateKey, error) {
+	var priv *sm2.PrivateKey
 
 	walkFunc := func(path string, info os.FileInfo, pathErr error) error {
 
@@ -55,34 +56,38 @@ func LoadPrivateKey(keystorePath string) (*ecdsa.PrivateKey, error) {
 	return priv, err
 }
 
-func parsePrivateKeyPEM(rawKey []byte) (*ecdsa.PrivateKey, error) {
+func parsePrivateKeyPEM(rawKey []byte) (*sm2.PrivateKey, error) {
 	block, _ := pem.Decode(rawKey)
 	if block == nil {
 		return nil, errors.New("bytes are not PEM encoded")
 	}
 
-	key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	//key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	key, err := sm2.ParsePKCS8UnecryptedPrivateKey(block.Bytes)
+
 	if err != nil {
 		return nil, errors.WithMessage(err, "pem bytes are not PKCS8 encoded ")
 	}
 
-	priv, ok := key.(*ecdsa.PrivateKey)
-	if !ok {
-		return nil, errors.New("pem bytes do not contain an EC private key")
-	}
-	return priv, nil
+	//priv, ok := key.(*ecdsa.PrivateKey)
+	//if !ok {
+	//	return nil, errors.New("pem bytes do not contain an EC private key")
+	//}
+	return key, nil
 }
 
 // GeneratePrivateKey creates an EC private key using a P-256 curve and stores
 // it in keystorePath.
-func GeneratePrivateKey(keystorePath string) (*ecdsa.PrivateKey, error) {
+func GeneratePrivateKey(keystorePath string) (*sm2.PrivateKey, error) {
 
-	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	//priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	priv, err := sm2.GenerateKey()
+
 	if err != nil {
 		return nil, errors.WithMessage(err, "failed to generate private key")
 	}
 
-	pkcs8Encoded, err := x509.MarshalPKCS8PrivateKey(priv)
+	pkcs8Encoded, err := sm2.MarshalSm2UnecryptedPrivateKey(priv)
 	if err != nil {
 		return nil, errors.WithMessage(err, "failed to marshal private key")
 	}
@@ -154,4 +159,60 @@ func toLowS(key ecdsa.PublicKey, sig ECDSASignature) ECDSASignature {
 
 type ECDSASignature struct {
 	R, S *big.Int
+}
+
+// GeneratePrivateKey creates a private key and stores it in keystorePath
+func GenerateSM2PrivateKey(keystorePath string) (bccsp.Key,
+	crypto.Signer, error) {
+
+	var err error
+	var priv bccsp.Key
+	var s crypto.Signer
+
+	opts := &factory.FactoryOpts{
+		//ProviderName: "SW",
+		ProviderName: "GM",
+		SwOpts: &factory.SwOpts{
+			//HashFamily: "SHA2",
+			HashFamily: "GMSM3",
+			SecLevel:   256,
+
+			FileKeystore: &factory.FileKeystoreOpts{
+				KeyStorePath: keystorePath,
+			},
+		},
+	}
+	csp, err := factory.GetBCCSPFromOpts(opts)
+	if err == nil {
+		// generate a key
+		//priv, err = csp.KeyGen(&bccsp.ECDSAP256KeyGenOpts{Temporary: false})
+		priv, err = csp.KeyGen(&bccsp.GMSM2KeyGenOpts{Temporary: false})
+		if err == nil {
+			// create a crypto.Signer
+			s, err = signer.New(csp, priv)
+		}
+	}
+	return priv, s, err
+}
+
+func GetSM2PublicKey(priv bccsp.Key) (*sm2.PublicKey, error) {
+
+	// get the public key
+	pubKey, err := priv.PublicKey()
+	if err != nil {
+		return nil, err
+	}
+
+	// marshal to bytes
+	pubKeyBytes, err := pubKey.Bytes()
+	if err != nil {
+		return nil, err
+	}
+	// unmarshal using pkix
+	sm2PubKey, err := sm2.ParseSm2PublicKey(pubKeyBytes)
+	//ecPubKey, err := x509.ParsePKIXPublicKey(pubKeyBytes)
+	if err != nil {
+		return nil, err
+	}
+	return sm2PubKey, nil
 }

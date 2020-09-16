@@ -8,6 +8,7 @@ package msp
 import (
 	"crypto/x509"
 	"encoding/pem"
+	"github.com/tjfoc/gmsm/sm2"
 	"os"
 	"path/filepath"
 
@@ -98,7 +99,7 @@ func GenerateLocalMSP(
 	// the signing CA certificate goes into cacerts
 	err = x509Export(
 		filepath.Join(mspDir, "cacerts", x509Filename(signCA.Name)),
-		signCA.SignCert,
+		signCA.SignSm2Cert,
 	)
 	if err != nil {
 		return err
@@ -106,7 +107,7 @@ func GenerateLocalMSP(
 	// the TLS CA certificate goes into tlscacerts
 	err = x509Export(
 		filepath.Join(mspDir, "tlscacerts", x509Filename(tlsCA.Name)),
-		tlsCA.SignCert,
+		tlsCA.SignSm2Cert,
 	)
 	if err != nil {
 		return err
@@ -156,7 +157,7 @@ func GenerateLocalMSP(
 	if err != nil {
 		return err
 	}
-	err = x509Export(filepath.Join(tlsDir, "ca.crt"), tlsCA.SignCert)
+	err = x509Export(filepath.Join(tlsDir, "ca.crt"), tlsCA.SignSm2Cert)
 	if err != nil {
 		return err
 	}
@@ -195,7 +196,7 @@ func GenerateVerifyingMSP(
 	// the signing CA certificate goes into cacerts
 	err = x509Export(
 		filepath.Join(baseDir, "cacerts", x509Filename(signCA.Name)),
-		signCA.SignCert,
+		signCA.SignSm2Cert,
 	)
 	if err != nil {
 		return err
@@ -203,7 +204,7 @@ func GenerateVerifyingMSP(
 	// the TLS CA certificate goes into tlscacerts
 	err = x509Export(
 		filepath.Join(baseDir, "tlscacerts", x509Filename(tlsCA.Name)),
-		tlsCA.SignCert,
+		tlsCA.SignSm2Cert,
 	)
 	if err != nil {
 		return err
@@ -277,7 +278,7 @@ func x509Filename(name string) string {
 	return name + "-cert.pem"
 }
 
-func x509Export(path string, cert *x509.Certificate) error {
+func x509Export(path string, cert *sm2.Certificate) error {
 	return pemExport(path, "CERTIFICATE", cert.Raw)
 }
 
